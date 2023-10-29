@@ -8,7 +8,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { sequelize } from '../database';
+import { sequelize } from 'src/config/database';
 import { Users } from './users.model'; //外表
 
 @Table({ tableName: 'article', timestamps: true })

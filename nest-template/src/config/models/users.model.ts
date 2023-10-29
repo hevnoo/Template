@@ -33,6 +33,12 @@ export class Users extends Model {
     type: DataTypes.STRING,
     allowNull: false,
   })
+  password: string;
+
+  @Column({
+    type: DataTypes.STRING,
+    allowNull: false,
+  })
   nickname: string;
 
   @Column({

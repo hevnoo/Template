@@ -7,6 +7,7 @@ export const sequelize = new Sequelize({
   username: 'root',
   password: '123456',
   database: 'second_hand',
+  // models: [__dirname + '/**/*.model.ts'], // 指定模型文件的路径
 });
 
 //同步所有模型字段

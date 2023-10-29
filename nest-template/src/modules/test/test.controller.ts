@@ -17,6 +17,8 @@ import {
   ForbiddenException,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { TestService } from './test.service';
@@ -26,14 +28,39 @@ import { TestMiddleware } from './test.middleware';
 import { RolesGuard } from 'src/common/guard/roles.guard';
 import { LoggingInterceptor } from 'src/common/interceptor/logging.interceptor';
 import { Users } from 'src/config/models/users.model';
+//自定义的鉴权装饰器，未使用@Public()即需要鉴权
+import { Public } from 'src/common/decorator/public.decorator';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtAuthGuard } from 'src/common/guard/auth.guard';
 
-@UseFilters(new HttpExceptionFilter()) //模块全局过滤器捕获并抛出错误
+// @UseFilters(new HttpExceptionFilter()) //模块全局过滤器捕获并抛出错误
 // @UseInterceptors(LoggingInterceptor) //拦截器
 @Controller('api/test')
 export class TestController {
   constructor(private testService: TestService) {}
 
+  //注册
+  @Public()
+  @Post('/register')
+  @HttpCode(200)
+  async register(@Body() key?: Users): Promise<object> {
+    return this.testService.register(key);
+  }
+
+  //登录
+  @Public()
+  @Post('/login')
+  @HttpCode(200)
+  // @UsePipes(new ValidationPipe())
+  async login(@Body() key?: LoginUserDto): Promise<object> {
+    console.log('---login---', key);
+    return this.testService.login(key);
+  }
+
+  //查询
+  // @Public()
   @Get('/getData')
+  // @UseGuards(JwtAuthGuard)
   //   @UseGuards(RolesGuard)
   @Header('Cache-Control', 'none')
   @HttpCode(200)
@@ -54,6 +81,7 @@ export class TestController {
   }
 
   //更新
+  // @Public()
   @Put('/updateData')
   @HttpCode(200)
   async update(@Body() key?: Users): Promise<object> {
@@ -62,6 +90,7 @@ export class TestController {
   }
 
   //删除
+  @Public()
   @Delete('deleteData')
   async delete(
     @Query('id') id?: number | string | number[] | string[],

@@ -1,4 +1,4 @@
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import {
   MiddlewareConsumer,
   Module,
@@ -16,6 +16,13 @@ import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { Users } from './config/models/users.model';
 import { Article } from './config/models/article.model';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './utils/constant';
+import { JwtAuthGuard } from './common/guard/auth.guard';
+//全局过滤器
+import { JwtAuthExceptionFilter } from './common/filter/auth-exceptions.filter';
+import { AllExceptionsFilter } from './common/filter/all-exceptions.filter';
 
 @Module({
   imports: [
@@ -33,13 +40,28 @@ import { Article } from './config/models/article.model';
       models: [Users, Article], // 要开始使用`User`模型，我们需要通过将其插入到`forRoot()`方法选项的`models`数组中来让`Sequelize`知道它的存在。
     }),
     SequelizeModule.forFeature([Users, Article]), //在本模块中使用前需引入
+    PassportModule,
+    // PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: jwtConstants.secretKey,
+      signOptions: { expiresIn: jwtConstants.expiresIn },
+    }),
   ],
   controllers: [AppController, UsersController],
   providers: [
     AppService,
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    AllExceptionsFilter, // 将 AllExceptionsFilter 添加到提供者列表中
     {
       provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
+      useClass: AllExceptionsFilter,
     },
   ],
 })
