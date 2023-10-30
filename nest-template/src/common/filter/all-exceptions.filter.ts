@@ -17,7 +17,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     console.log('allFilter:', exception);
     // console.log(exception.response);
     //获取class-validator的校验提示信息
-    const message = exception.response.message[0];
+    const message = exception.response.message
+      ? exception.response.message[0]
+      : '';
 
     if (exception.name === 'TokenExpiredError') {
       // JWT令牌已过期

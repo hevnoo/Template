@@ -6,7 +6,7 @@ import { Op, Sequelize } from 'sequelize';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { validate } from 'class-validator';
-import { LoginUserDto } from './dto/login-user.dto';
+import { LoginUserDto, RegisterUserDto } from './dto/users.dto';
 
 @Injectable()
 export class TestService {
@@ -176,7 +176,7 @@ export class TestService {
   // }
 
   //更新
-  async update(params: Users): Promise<object> {
+  async update(params): Promise<object> {
     const { id } = params;
     const user = await this.usersModel.findOne({ where: { id } });
     if (!user) {
@@ -191,12 +191,12 @@ export class TestService {
   }
 
   //删除
-  async delete(id: number | string | number[] | string[]): Promise<object> {
+  async delete(id): Promise<object> {
     let res;
-    // const user = await this.usersModel.findOne({ where: { id } });
-    // if (!user) {
-    //   return { code: 404, msg: '指定的用户不存在', data: null };
-    // }
+    const user = await this.usersModel.findOne({ where: { id } });
+    if (!user) {
+      return { code: 404, msg: '指定的用户不存在', data: null };
+    }
     if (Array.isArray(id)) {
       // 批量删除
       if (!id.length) return { code: 404, msg: '无效标识', data: null };

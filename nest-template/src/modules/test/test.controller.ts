@@ -30,8 +30,15 @@ import { LoggingInterceptor } from 'src/common/interceptor/logging.interceptor';
 import { Users } from 'src/config/models/users.model';
 //自定义的鉴权装饰器，未使用@Public()即需要鉴权
 import { Public } from 'src/common/decorator/public.decorator';
-import { LoginUserDto } from './dto/login-user.dto';
+import {
+  LoginUserDto,
+  RegisterUserDto,
+  UpdateUserDto,
+  DeleteUserDto,
+} from './dto/users.dto';
 import { JwtAuthGuard } from 'src/common/guard/auth.guard';
+//参数转换
+import { ParamsPipe } from 'src/common/pipe/params.pipe';
 
 // @UseFilters(new HttpExceptionFilter()) //模块全局过滤器捕获并抛出错误
 // @UseInterceptors(LoggingInterceptor) //拦截器
@@ -43,7 +50,7 @@ export class TestController {
   @Public()
   @Post('/register')
   @HttpCode(200)
-  async register(@Body() key?: Users): Promise<object> {
+  async register(@Body() key?: RegisterUserDto): Promise<object> {
     return this.testService.register(key);
   }
 
@@ -84,20 +91,26 @@ export class TestController {
   // @Public()
   @Put('/updateData')
   @HttpCode(200)
-  async update(@Body() key?: Users): Promise<object> {
+  async update(@Body() key?: UpdateUserDto): Promise<object> {
     console.log('---update参数---', key);
     return this.testService.update(key);
   }
 
   //删除
   @Public()
+  @UsePipes(new ParamsPipe())
   @Delete('deleteData')
-  async delete(
-    @Query('id') id?: number | string | number[] | string[],
-  ): Promise<object> {
-    console.log('---delete参数---', id);
-    return this.testService.delete(id);
+  //用注解的方式可以直接装换类型 @Query('id') key?: number[]
+  async delete(@Query() key?: DeleteUserDto): Promise<object> {
+    console.log('---delete参数---', key);
+    return this.testService.delete(key);
   }
+  // async delete(
+  //   @Query('id') id?: number | string | number[] | string[],
+  // ): Promise<object> {
+  //   console.log('---delete参数---', id);
+  //   return this.testService.delete(id);
+  // }
   // @Delete(':id')
   // async delete(@Param('id') id: number): Promise<object> {
   //   return this.testService.delete(id);
