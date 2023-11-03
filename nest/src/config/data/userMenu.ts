@@ -1,0 +1,47 @@
+export const userMenu = [
+  {
+    id: 0,
+    name: 'home',
+    path: '/home',
+    redirect: '',
+    component: '/home/index.vue',
+    meta: {
+      title: '首页',
+      icon: 'HomeFilled',
+    },
+  },
+  {
+    id: 1,
+    name: 'info',
+    path: '/info',
+    component: '/info/index.vue',
+    meta: {
+      title: '信息',
+      icon: 'Goods',
+    },
+  },
+  {
+    id: 2,
+    name: 'order',
+    path: '/order',
+    component: '/order/index.vue',
+    meta: {
+      title: '订单管理',
+      icon: 'Document',
+    },
+    children: [
+      {
+        id: 2.1,
+        name: 'orderList',
+        path: '/order/orderList',
+        component: '/order/orderList/index.vue',
+        parentId: 2,
+        meta: {
+          title: '订单列表',
+          icon: 'List',
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+];
