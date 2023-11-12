@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import VxeTableWrapper from "@/components/commonComp/vxeTable.vue";
-import VxeGridTable from "@/components/commonComp/vxeGridTable.vue";
-import Pagination from "@/components/commonComp/pagination.vue";
+import VxeTableWrapper from "@/components/customComp/vxeTable.vue";
+import VxeGridTable from "@/components/customComp/vxeGridTable.vue";
+import Pagination from "@/components/customComp/pagination.vue";
 import { ref, onMounted, computed, watch } from "vue";
 import {
   useRoute,
@@ -104,8 +104,8 @@ const dialogConfig = ref({
       inputType: "text",
       placeholder: "请选择",
       options: [
-        { value: "1", label: "admin" },
-        { value: "2", label: "user" },
+        { value: "admin", label: "管理员" },
+        { value: "user", label: "用户" },
       ],
     },
   ],

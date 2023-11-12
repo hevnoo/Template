@@ -32,12 +32,12 @@ app.use(cors());
 //jwt
 app.use(
   jwt({ secret: PRIVATE_KEY, algorithms: ["HS256"] }).unless({
-    path: ["/api/user/register", "/api/user/login"],
+    path: ["/api/users/register", "/api/users/login"],
   })
 );
 
 app.use("/api/", indexRouter);
-app.use("/api/user", userRouter);
+app.use("/api/users", userRouter);
 // 应用中间件到需要验证token的路由之前
 app.use(verifyToken);
 // app.use("/api/", indexRouter);

@@ -8,6 +8,7 @@ import {
 // import { articleDetailRouter } from './modules/otherAddRoter'
 import { asyncRouter } from "@/router/modules/asyncRouter";
 import storage from "@/utils/storage";
+import { user } from "@/store";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -22,10 +23,14 @@ setupRouterGuard(router);
 
 const getMenu = () => {
   let isRoute = true;
+
   if (isRoute) {
+    // const useUser: any = user();
+    // let { menu } = useUser;
     //如果为空，判断为刷新，就重新添加路由，防止刷新路由丢失！
     isRoute = false;
     const menuList = storage.getLocal("menu") || [];
+    console.log("menuList", menuList);
     {
       menuList.map((m: any) => {
         const { path, name, component, meta } = m;

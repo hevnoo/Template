@@ -78,8 +78,8 @@ const handleSizeChange = (val) => {
 onBeforeRouteUpdate((to, from) => {});
 
 /* 
-直接在父组件使用currentChange调用api即可
-*/
+  直接在父组件使用currentChange调用api即可
+  */
 </script>
 
 <style scoped lang="scss">

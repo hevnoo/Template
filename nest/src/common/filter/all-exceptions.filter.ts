@@ -17,7 +17,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     console.log('allFilter:', exception);
     // console.log(exception.response);
     //获取class-validator的校验提示信息
-    const message = exception.response.message
+    const message = exception.response?.message
       ? exception.response.message[0]
       : '';
 
@@ -45,9 +45,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // 其他错误
+    // const code = exception ? exception.getStatus() : '404';
     return response.status(HttpStatus.UNAUTHORIZED).json({
       // code: HttpStatus.UNAUTHORIZED,
-      code: exception.getStatus(),
+      code: '404',
       msg: message || '未知错误',
       timestamp: new Date().toISOString(),
       path: request.url,

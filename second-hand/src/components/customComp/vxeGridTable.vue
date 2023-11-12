@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import VxeForm from "@/components/commonComp/vxeForm.vue";
+import VxeForm from "@/components/customComp/vxeForm.vue";
 import { ref, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -129,7 +129,7 @@ const props = defineProps({
             // 接收 Promise API
             query: ({ page, sorts, filters, form }) => {},
             delete: {
-              url: "/user/deleUser",
+              url: "/users/deleteData",
             },
           },
         },
@@ -393,13 +393,13 @@ watch(
 );
 watch(
   () => props.deleteDataApi,
-  (newVal, oldVal) => {
+  (deleteDataApi, oldVal) => {
     props.gridOptions.proxyConfig.ajax.delete = ({ body }) => {
       let ids = [];
       body.removeRecords.forEach((item) => {
         ids.push(item.id);
       });
-      return newVal(ids);
+      return deleteDataApi(ids);
     };
   },
   { immediate: true, deep: true }
@@ -549,7 +549,7 @@ async function rowDeleteBtn(row) {
     type: "warning",
   })
     .then(async () => {
-      await props.deleteDataApi(row);
+      await props.deleteDataApi(row.id);
       gridTable.value.commitProxy("query"); //触发查询ajax.query
       ElMessage({
         type: "success",

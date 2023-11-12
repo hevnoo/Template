@@ -19,7 +19,7 @@ const user = defineStore("/user", {
     //获取菜单
     async setMenu(val: any) {
       const { data } = await getMenuApi(val);
-      this.menu = data.data.menu;
+      this.menu = data.data;
       storage.setLocal("menu", this.menu);
     },
     //登录

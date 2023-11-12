@@ -1,6 +1,7 @@
+import { v4 as uuidv4 } from 'uuid';
 export const adminMenu = [
   {
-    id: 0,
+    id: uuidv4(),
     name: 'home',
     path: '/home',
     redirect: '',
@@ -11,7 +12,7 @@ export const adminMenu = [
     },
   },
   {
-    id: 1,
+    id: uuidv4(),
     name: 'info',
     path: '/info',
     component: '/info/index.vue',
@@ -21,7 +22,7 @@ export const adminMenu = [
     },
   },
   {
-    id: 2,
+    id: uuidv4(),
     name: 'news',
     path: '/news',
     component: '/news/index.vue',
@@ -31,7 +32,7 @@ export const adminMenu = [
     },
   },
   {
-    id: 3,
+    id: uuidv4(),
     name: 'article',
     path: '/article',
     component: '/article/index.vue',
@@ -41,7 +42,7 @@ export const adminMenu = [
     },
   },
   {
-    id: 4,
+    id: uuidv4(),
     name: 'order',
     path: '/order',
     component: '/order/index.vue',
@@ -51,7 +52,7 @@ export const adminMenu = [
     },
     children: [
       {
-        id: 2.1,
+        id: uuidv4(),
         name: 'orderList',
         path: '/order/orderList',
         component: '/order/orderList/index.vue',
@@ -63,7 +64,7 @@ export const adminMenu = [
         },
       },
       {
-        id: 2.2,
+        id: uuidv4(),
         name: 'collect',
         path: '/order/collect',
         component: '/order/collect/index.vue',

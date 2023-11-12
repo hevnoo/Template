@@ -9,6 +9,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const { httpAdapter } = app.get(HttpAdapterHost);
+
   //全局过滤器
   // app.useGlobalFilters(new HttpExceptionFilter());
   // app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
@@ -19,7 +20,8 @@ async function bootstrap() {
   // app.useGlobalInterceptors(new LoggingInterceptor());
   // 全局类验证器
   app.useGlobalPipes(new ValidationPipe());
-
-  await app.listen(3000);
+  //跨域
+  app.enableCors();
+  await app.listen(8282);
 }
 bootstrap();

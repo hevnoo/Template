@@ -7,18 +7,21 @@ import {
   AutoIncrement,
   ForeignKey,
   BelongsTo,
+  Default,
 } from 'sequelize-typescript';
-import { sequelize } from 'src/config/database';
+import { v4 as uuidv4 } from 'uuid';
+// import { sequelize } from 'src/config/database';
 import { Users } from './users.model'; //外表
 
 @Table({ tableName: 'article', timestamps: true })
 export class Article extends Model<Article> {
   // @PrimaryKey
   // @AutoIncrement
+  @Default(uuidv4) // 设置默认值为 UUID v4
   @Column({
-    type: DataType.INTEGER.UNSIGNED,
+    type: DataType.UUID,
     allowNull: false,
-    autoIncrement: true, //自增
+    // autoIncrement: true, //自增
     primaryKey: true, //主键
     unique: true,
   })
@@ -32,7 +35,8 @@ export class Article extends Model<Article> {
 
   //文章作者id-外键
   @ForeignKey(() => Users)
-  @Column({ type: DataType.INTEGER.UNSIGNED, allowNull: false })
+  @Default(uuidv4)
+  @Column({ type: DataType.UUID, allowNull: false })
   public authorId!: string;
 
   //创建一个名为 author 的属性，用于访问与 Users 模型关联的作者信息。

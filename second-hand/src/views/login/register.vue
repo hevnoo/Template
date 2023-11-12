@@ -53,7 +53,6 @@
             type="password"
             autocomplete="off"
             placeholder="昵称"
-            show-password
             clearable
             size="large"
             v-on:keyup.13="submitForm(formRef)"

@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import Menu from "@/components/commonComp/menu.vue";
+import Menu from "@/components/customComp/menu.vue";
 import { ref, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { user } from "@/store";

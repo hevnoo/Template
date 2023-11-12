@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import VxeTable from "@/components/commonComp/vxeTable.vue";
-import VxeGridTable from "@/components/commonComp/vxeGridTable.vue";
-import Pagination from "@/components/commonComp/pagination.vue";
+import VxeTable from "@/components/customComp/vxeTable.vue";
+import VxeGridTable from "@/components/customComp/vxeGridTable.vue";
+import Pagination from "@/components/customComp/pagination.vue";
 import { ref, onMounted, computed, watch } from "vue";
 import {
   useRoute,

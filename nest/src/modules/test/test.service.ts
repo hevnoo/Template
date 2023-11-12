@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { sequelize } from 'src/config/database';
+// import { sequelize } from 'src/config/database';
 import { Users } from 'src/config/models/users.model';
 import { Op, Sequelize } from 'sequelize';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { validate } from 'class-validator';
+import { v4 as uuidv4 } from 'uuid';
 import { Request, Response } from 'express';
 import { LoginUserDto, RegisterUserDto } from './dto/users.dto';
 //
