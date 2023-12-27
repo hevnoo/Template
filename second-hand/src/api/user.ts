@@ -50,10 +50,6 @@ export const upUserApi = (data: any) => {
 };
 
 //删除用户
-export const deleUserApi = (id: deleteUsers) => {
-  return http.delete("/users/deleteData", {
-    data: {
-      id: id,
-    },
-  });
+export const deleUserApi = (data: Object) => {
+  return http.delete("/users/deleteData", { data });
 };

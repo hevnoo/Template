@@ -59,9 +59,9 @@
   >
     <el-menu-item>LOGO</el-menu-item>
     <div class="flex-grow" />
-    <template v-for="(item, index) in (props.value as any[])" :key="item.id">
+    <template v-for="(item, index) in (props.value as any[])" :key="index">
       <el-menu-item
-        v-if="!item.children"
+        v-if="!item.children.length"
         :index="item.path"
         @click="clickItem(item.name, item.component, index)"
       >

@@ -152,14 +152,6 @@ import {
 } from "vxe-table";
 const route = useRoute();
 const router = useRouter();
-interface FormDataVO {
-  name: string;
-  nickname: string;
-  sex: string;
-  age: number;
-  date: string;
-  address: string;
-}
 const emits = defineEmits([
   "submitEvent",
   "resetEvent",
@@ -205,8 +197,8 @@ const props = defineProps({
         inputType: "select",
         placeholder: "请选择性别",
         options: [
-          { value: "1", label: "一" },
-          { value: "2", label: "二" },
+          { value: "man", label: "男" },
+          { value: "woman", label: "女" },
         ],
       },
     ],

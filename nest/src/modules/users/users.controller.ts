@@ -82,7 +82,7 @@ export class UsersController {
   }
 
   //新增
-  @UseInterceptors(LoggingInterceptor) //拦截器
+  // @UseInterceptors(LoggingInterceptor) //拦截器
   @Post('/createData')
   @HttpCode(200)
   async create(@Body() key?: object): Promise<object> {
@@ -95,9 +95,9 @@ export class UsersController {
   // @Public()
   @Put('/updateData')
   @HttpCode(200)
-  async update(@Body() key?: UpdateUserDto): Promise<object> {
+  async update(@Req() req: any, @Body() key?: UpdateUserDto): Promise<object> {
     console.log('---update参数---', key);
-    return this.usersService.update(key);
+    return this.usersService.update(req, key);
   }
 
   //删除
@@ -106,7 +106,7 @@ export class UsersController {
   @Delete('/deleteData')
   @HttpCode(200)
   //用注解的方式可以直接装换类型 @Query('id') key?: number[]
-  async delete(@Body() key?: DeleteUserDto): Promise<object> {
+  async delete(@Body() key?: any): Promise<object> {
     console.log('---delete参数---', key);
     return this.usersService.delete(key);
   }

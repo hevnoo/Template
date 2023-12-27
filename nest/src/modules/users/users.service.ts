@@ -37,6 +37,7 @@ export class UsersService {
 
   //注册
   async register(params): Promise<object> {
+    delete params.id;
     const { username } = params;
     const foundUser = await this.usersModel.findOne({
       where: { username: { [Op.eq]: username } },
@@ -44,7 +45,6 @@ export class UsersService {
     if (foundUser) {
       return { code: 404, msg: '用户已存在', data: null };
     }
-
     // 对用户密码进行加密处理
     params.password = await bcrypt.hash(params.password, 10);
     if (!params['role'] && params['username'] === 'admin') {
@@ -84,9 +84,13 @@ export class UsersService {
       foundUser &&
       (await bcrypt.compare(`${params.password}`, foundUser.password))
     ) {
-      const payload = { username: foundUser.username, sub: foundUser.id };
+      const payload = {
+        username: foundUser.username,
+        id: foundUser.id, //存入信息到req.user
+        sub: foundUser.id,
+      };
       const access_token = this.jwtService.sign(payload);
-      return { code: 200, msg: '登录成功', data: null, token: access_token };
+      return { code: 200, msg: '欢迎登录', data: null, token: access_token };
     } else {
       return { message: '用户名或密码错误' };
     }
@@ -94,10 +98,14 @@ export class UsersService {
 
   //查询
   async findAll(params): Promise<object> {
-    const currentPage = Number(params.currentPage || 1);
-    const pageSize = Number(params.pageSize || 10);
-    const limit = pageSize; // 每页显示的记录数
-    const offset = (currentPage - 1) * pageSize; // 偏移量
+    let limit = null; // 每页显示的记录数
+    let offset = null; // 偏移量
+    if (params['currentPage'] && params['pageSize']) {
+      const currentPage = params.currentPage - 0 || 0;
+      const pageSize = params.pageSize - 0 || 0;
+      limit = pageSize; // 每页显示的记录数
+      offset = (currentPage - 1) * pageSize; // 偏移量
+    }
     const conditions = [];
     const conditionsOr = [];
     if (params['username']) {
@@ -131,7 +139,7 @@ export class UsersService {
     // console.log('where:', where);
     const order: [string, 'ASC' | 'DESC'][] = [['createdAt', 'DESC']]; // 按照 createdAt 字段倒序排序
     const [data, totalCount] = await Promise.all([
-      this.usersModel.findAll({ where, limit, offset, order }),
+      this.usersModel.findAll({ where, order, limit, offset }),
       this.usersModel.count({ where }),
     ]);
     // const data = await Users.findAll({ where, limit, offset });
@@ -165,7 +173,14 @@ export class UsersService {
   }
 
   //更新
-  async update(params): Promise<object> {
+  async update(req, params): Promise<object> {
+    const { id: userId, username } = req.user;
+    const foundUser = await this.usersModel.findOne({
+      where: { id: { [Op.eq]: userId } },
+    });
+    if (foundUser.role !== 'admin') {
+      return { code: 400, msg: '您没有修改权限！', data: null };
+    }
     const { id } = params;
     const user = await this.usersModel.findOne({ where: { id } });
     if (!user) {

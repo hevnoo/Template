@@ -15,8 +15,11 @@ import { UsersModule } from './modules/users/users.module';
 // 注册全局范围的过滤器直接为任何模块设置过滤器
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+//sql
 import { Users } from './config/models/users.model';
-import { Article } from './config/models/article.model';
+import { Articles } from './config/models/articles.model';
+import { Favorites } from './config/models/favorites.model';
+//npm
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './utils/constant';
@@ -25,6 +28,12 @@ import { JwtAuthGuard } from './common/guard/auth.guard';
 import { JwtAuthExceptionFilter } from './common/filter/auth-exceptions.filter';
 import { AllExceptionsFilter } from './common/filter/all-exceptions.filter';
 import { AuthMiddleware } from './common/middleware/auth.middleware';
+import { ArticlesController } from './modules/articles/articles.controller';
+import { ArticlesService } from './modules/articles/articles.service';
+import { ArticlesModule } from './modules/articles/articles.module';
+import { FavoritesController } from './modules/favorites/favorites.controller';
+import { FavoritesService } from './modules/favorites/favorites.service';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 
 //声明user，用来保存用户的信息username
 declare module 'express' {
@@ -46,17 +55,24 @@ declare module 'express' {
       database: 'second_hand',
       autoLoadModels: true, // 自动加载模型
       synchronize: true, // 自动同步数据库
-      models: [Users, Article], // 要开始使用`User`模型，我们需要通过将其插入到`forRoot()`方法选项的`models`数组中来让`Sequelize`知道它的存在。
+      models: [Users, Articles, Favorites], // 要开始使用`User`模型，我们需要通过将其插入到`forRoot()`方法选项的`models`数组中来让`Sequelize`知道它的存在。
     }),
-    SequelizeModule.forFeature([Users, Article]), //在本模块中使用前需引入
+    SequelizeModule.forFeature([Users, Articles, Favorites]), //在本模块中使用前需引入
     PassportModule,
     // PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: jwtConstants.secretKey,
       signOptions: { expiresIn: jwtConstants.expiresIn },
     }),
+    ArticlesModule,
+    FavoritesModule,
   ],
-  controllers: [AppController, UsersController],
+  controllers: [
+    AppController,
+    UsersController,
+    ArticlesController,
+    FavoritesController,
+  ],
   providers: [
     AppService,
     // {
@@ -72,6 +88,8 @@ declare module 'express' {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
+    ArticlesService,
+    FavoritesService,
   ],
 })
 // export class AppModule {}

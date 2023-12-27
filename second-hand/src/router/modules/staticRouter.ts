@@ -2,7 +2,11 @@
 // import { HOME_URL, LOGIN_URL } from "@/config/config";
 
 //  * staticRouter(静态路由)
-
+//引入插件自动生成的路由pages
+import routes from "pages-generated";
+import { setupLayouts } from "virtual:generated-layouts";
+import generatedRoutes from "virtual:generated-pages";
+const routes = setupLayouts(generatedRoutes);
 export const staticRouter = [
   {
     path: "/login",
@@ -15,9 +19,10 @@ export const staticRouter = [
   {
     path: "/",
     name: "layout",
-    component: () => import("@/views/layout/index.vue"),
+    component: () => import("@/layout/index.vue"),
     redirect: "/403",
     children: [
+      ...routes,
       {
         path: "/403",
         name: "403",
@@ -25,6 +30,19 @@ export const staticRouter = [
       },
     ],
   },
+  // {
+  //   path: "/",
+  //   name: "layout",
+  //   component: () => import("@/views/layout/index.vue"),
+  //   redirect: "/403",
+  //   children: [
+  //     {
+  //       path: "/403",
+  //       name: "403",
+  //       component: () => import("@/components/error/403.vue"),
+  //     },
+  //   ],
+  // },
   //others components:
   // {
   // 	path: '/article/articleDetail',

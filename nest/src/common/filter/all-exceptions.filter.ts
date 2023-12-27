@@ -14,7 +14,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    console.log('allFilter:', exception);
+    console.log('错误-allFilter:', exception);
     // console.log(exception.response);
     //获取class-validator的校验提示信息
     const message = exception.response?.message

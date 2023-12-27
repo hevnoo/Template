@@ -7,49 +7,79 @@
       :columns="props.columns"
       :formConfig="props.formConfig"
       :toolbar-config="props.toolbarConfig"
-      :pager-config="props.pagerConfig"
       @toolbar-button-click="toolbarButtonClick"
     >
-      <template #operate="{ row }">
+      <template #html="{ row, column }">
+        <div v-html="row[`${column['field']}`]"></div>
+      </template>
+      <template #button="{ row, column }">
+        <el-button type="primary" size="small">{{
+          row[`${column["field"]}`]
+        }}</el-button>
+      </template>
+      <template #switch="{ row, column }">
+        <el-switch
+          v-model="row[`${column.field}`]"
+          :active-value="1"
+          :inactive-value="0"
+          @change="handleSwitchChange(row, column)"
+        ></el-switch>
+      </template>
+      <template #img="{ row, column }">
+        <img :src="row[`${column['field']}`]" alt="" />
+      </template>
+      <template #href="{ row, column }">
+        <a href="#" :target="row[`${column.field}`]">{{
+          row[`${column.field}`]
+        }}</a>
+      </template>
+      <!-- (item, index) in (props.operate as any[])  v-slot:operate="{ row }" -->
+      <template
+        #operate="{ row, column, rowIndex, $table }"
+        v-if="formatOperates.length"
+      >
         <vxe-button
-          v-if="props.operate.length"
-          v-for="(item, index) in (props.operate as any)"
+          v-for="(item, index) in props.formatOperate(
+            row,
+            deepClone(formatOperates)
+          )"
           size="small"
+          type="text"
           :content="item.label"
-          :status="item.status"
-          @click="item.clickRow(row)"
+          :status="item.status || 'primary'"
+          @click="item.clickRow(row, column, rowIndex, $table)"
         ></vxe-button>
       </template>
     </vxe-grid>
-    <!-- 弹框 -->
-    <vxe-modal
-      v-model="isModalOpen"
-      :title="props.dialogConfig.title"
-      :width="props.dialogConfig.width"
-      :min-width="props.dialogConfig.minWidth"
-      :min-height="props.dialogConfig.minHeight"
-      :loading="props.dialogConfig.loading"
-      :resize="props.dialogConfig.resize"
-      :destroy-on-close="props.dialogConfig.destroyOnClose"
+    <!-- 弹框props.gridOptions.customDialog ? false : props.dialogVisible.val -->
+    <Dialog
+      v-if="!props.gridOptions.customDialog"
+      :dialogVisible="
+        props.gridOptions.customDialog ? { val: false } : dialogVisible
+      "
+      :dialogConfig="dialogConfig"
+      @submit="dialogClick"
+      @confirm="dialogClick"
+      @cansel="dialogClick"
     >
-      <template #default>
-        <!-- 表单 -->
-        <VxeForm
-          :formData="props.dialogConfig.formData"
-          :formItems="props.dialogConfig.formItems"
-          :dialogBtns="props.dialogConfig.dialogBtns"
-          @submitEvent="submitEvent"
-          @resetEvent="resetEvent"
-          @close="close"
-        ></VxeForm>
-      </template>
-    </vxe-modal>
+      <!-- 弹框表单 -->
+      <Form
+        :formFields="props.dialogFormConfig.formFields"
+        :formItems="dialogFormConfigItems"
+        :buttons="props.dialogFormConfig.buttons"
+        :formSettings="props.dialogFormConfig.formSettings"
+        @submitEvent="submitEvent"
+        @resetEvent="resetEvent"
+        @close="close"
+      ></Form>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import VxeForm from "@/components/customComp/vxeForm.vue";
-import { ref, onMounted, computed, watch } from "vue";
+import Dialog from "@/components/customComp/dialog.vue";
+import Form from "@/components/customComp/form.vue";
+import { ref, onMounted, computed, watch, watchEffect, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   VxeGridProps,
@@ -73,35 +103,17 @@ const emits = defineEmits([
   "submitEvent",
   "resetEvent",
   "close",
+  "dialogClick",
+  "handleSwitchChange",
 ]);
 const props = defineProps({
-  isModalOpen: {
-    type: Boolean,
-    default: () => false,
-  },
-  operate: {
-    type: Array, //按钮配置
-    default: () => [
-      { label: "详情", code: "detail", status: "", clickRow: (row) => {} },
-      {
-        label: "编辑",
-        code: "edit",
-        status: "primary",
-        clickRow: (row) => {},
-      },
-      {
-        label: "删除",
-        code: "delete",
-        status: "danger",
-        clickRow: (row) => {},
-      },
-    ],
-  },
   //可包含所有配置项...
   gridOptions: {
     type: Object,
     default: () => {
       return {
+        customDialog: false, //是否自定义弹窗
+        refresh: false, //是否刷新
         border: true,
         showOverflow: true,
         height: "",
@@ -113,6 +125,11 @@ const props = defineProps({
         },
         columnConfig: {
           resizable: true,
+        },
+        pagerConfig: {
+          enabled: true,
+          pageSize: 10,
+          pageSizes: [5, 10, 15, 20, 50, 100, 200, 500, 1000],
         },
         proxyConfig: {
           form: true, // 启用表单代理
@@ -142,28 +159,60 @@ const props = defineProps({
       };
     },
   },
+  operate: {
+    type: Array, //按钮配置
+    default: () => [
+      {
+        label: "详情",
+        code: "detail",
+        status: "primary",
+        clickRow: (row, column, rowIndex, $table) => {},
+      },
+      {
+        label: "编辑",
+        code: "edit",
+        status: "primary",
+        clickRow: (row, column, rowIndex, $table) => {},
+      },
+      {
+        label: "删除",
+        code: "delete",
+        status: "danger",
+        clickRow: (row, column, rowIndex, $table) => {},
+      },
+    ],
+  },
+  formatOperate: {
+    type: Function, //动态渲染操作列
+    default: (row, operate) => {
+      return operate;
+    },
+  },
   columns: {
     type: Array,
     default: () => [
       { type: "checkbox", width: 60 },
       { type: "seq", width: 60 },
       { field: "username", title: "Name" },
-      { field: "nickname", title: "Nickname" },
+      {
+        field: "nickname",
+        title: "Nickname",
+        slots: { default: "html" },
+        props: "nickname",
+      },
       { field: "role", title: "Role" },
-      { field: "avatar", title: "Avatar", showOverflow: true },
+      {
+        field: "avatar",
+        title: "Avatar",
+        showOverflow: true,
+        formatter({ cellValue }) {
+          return cellValue ? cellValue : "-";
+        },
+      },
       { title: "操作", width: 300, slots: { default: "operate" } },
     ],
   },
-  pagerConfig: {
-    type: Object,
-    default: () => {
-      return {
-        currentPage: 1,
-        pageSize: 10,
-        pageSizes: [10, 20, 50, 100, 200, 500],
-      };
-    },
-  },
+
   formConfig: {
     type: Object,
     default: () => {
@@ -181,7 +230,7 @@ const props = defineProps({
             // },
             itemRender: {
               name: "$input",
-              props: { placeholder: "请输入名称" },
+              props: { placeholder: "请输入名称", clearable: true },
             },
           },
           {
@@ -192,6 +241,7 @@ const props = defineProps({
               name: "$select",
               props: {
                 placeholder: "请选择角色",
+                clearable: true,
                 options: [
                   { value: "admin", label: "管理员" },
                   { value: "user", label: "用户" },
@@ -226,10 +276,10 @@ const props = defineProps({
     default: () => {
       return {
         buttons: [
-          { code: "add", name: "新增" },
+          { code: "add", name: "新增", status: "success" },
           { code: "delete", name: "删除" },
           // { code: "mark_cancel", name: "删除/取消" },
-          { code: "save", name: "保存", status: "success" },
+          // { code: "save", name: "保存", status: "success" },
         ],
         refresh: true, // 显示刷新按钮
         export: true,
@@ -237,36 +287,77 @@ const props = defineProps({
       };
     },
   },
-  //弹框相关配置
+  dialogVisible: {
+    type: Object,
+    default: () => {
+      return { val: false };
+    },
+  },
   dialogConfig: {
     type: Object,
     default: () => {
       return {
-        showEdit: false,
+        // dialogVisible: false,
         title: "提示",
-        width: "800px",
-        minWidth: "800px",
-        minHeight: "600px",
-        loading: false,
-        resize: true,
-        destroyOnClose: true,
-        formData: {
+        width: "50%",
+        height: "600px",
+        clickModal: false,
+        footer: {
+          mode: "", //custom——始终使用传入的值
+          position: "right",
+          buttons: [
+            {
+              label: "取消",
+              value: "cancel",
+              type: "info",
+              prev: ["edit", "detail", "add"],
+            },
+            { label: "重置", value: "reset", type: "", prev: [] },
+            {
+              label: "确认",
+              value: "confirm",
+              type: "primary",
+              prev: ["detail"],
+            },
+            {
+              label: "提交",
+              value: "submit",
+              type: "primary",
+              prev: ["edit", "add"],
+            },
+          ],
+        },
+      };
+    },
+  },
+  dialogFormConfig: {
+    type: Object,
+    default: () => {
+      return {
+        formSettings: {
+          width: "70%",
+          labelWidth: "100px",
+          inline: false,
+          size: "default",
+        },
+        formFields: {
           username: "",
           password: "",
           nickname: "",
           role: "",
         },
-        formRules: {},
         formItems: [
           {
             field: "username",
-            title: "名称",
+            title: "用户名：",
             span: 24,
+            type: "input",
             inputType: "text", //切换时选择输入框类型
+            disabled: true,
           },
           {
             field: "password",
-            title: "密码",
+            title: "密码：",
             span: 24,
             type: "input",
             inputType: "text",
@@ -274,7 +365,7 @@ const props = defineProps({
           },
           {
             field: "nickname",
-            title: "昵称",
+            title: "昵称：",
             span: 24,
             type: "input",
             inputType: "text",
@@ -282,7 +373,7 @@ const props = defineProps({
           },
           {
             field: "role",
-            title: "角色",
+            title: "角色：",
             span: 24,
             type: "select",
             inputType: "select",
@@ -293,7 +384,8 @@ const props = defineProps({
             ],
           },
         ],
-        dialogBtns: [
+        formRules: {},
+        buttons: [
           {
             type: "submit",
             status: "primary",
@@ -313,46 +405,71 @@ const props = defineProps({
       };
     },
   },
-
   getDataApi: {
     type: Function, //{ page, sorts, filters, form }参数
-    default:
-      () =>
-      ({ page, sorts, filters, form }) => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              result: [],
-              page: {
-                total: 0,
-              },
-            });
-          }, 500);
-        });
-      },
+    default: ({ page, sorts, filters, form }) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            result: [],
+            page: {
+              total: 0,
+            },
+          });
+        }, 500);
+      });
+    },
   },
   addDataApi: {
     type: Function, //添加数据api
-    default: () => () => {},
+    default: () => {},
   },
   updateDataApi: {
     type: Function, //更新数据api
-    default: () => () => {},
+    default: () => {},
   },
   deleteDataApi: {
     type: Function, //删除数据api
-    default: () => () => {},
+    default: () => {},
   },
 });
 const gridTable = ref();
-const isModalOpen = ref(props.isModalOpen);
 const mode = ref("add"); //判断添加或编辑态add、edit
-//用于还原
-let oldFormItems = ref(
-  JSON.parse(JSON.stringify(props.dialogConfig.formItems))
-);
 let gridOptions = ref(props.gridOptions);
+
 // let pagerConfig = ref(props.pagerConfig);
+let dialogConfig = ref(JSON.parse(JSON.stringify(props.dialogConfig)));
+//
+let dialogFormConfigItems = ref(
+  JSON.parse(JSON.stringify(props.dialogFormConfig.formItems))
+);
+let dialogFormItemsOfEdit = computed(() => {
+  let list = JSON.parse(JSON.stringify(props.dialogFormConfig.formItems));
+  return list;
+});
+//根据传进来的编辑类型的items，转换成新增时的表单类型
+let dialogFormItemsOfAdd = computed(() => {
+  let list = JSON.parse(JSON.stringify(props.dialogFormConfig.formItems));
+  for (let item of list) {
+    if (item["disabled"] === true) {
+      item["disabled"] = false;
+    }
+    if (item["type"] === "text") {
+      item["type"] = "input";
+    }
+  }
+  return list;
+});
+//转化成详情类型
+let dialogFormItemsOfDetail = computed(() => {
+  let list = JSON.parse(JSON.stringify(props.dialogFormConfig.formItems));
+  for (let item of list) {
+    if (item["type"] !== "text") {
+      item["type"] = "text";
+    }
+  }
+  return list;
+});
 
 watch(
   () => props.getDataApi,
@@ -382,7 +499,7 @@ watch(
           resolve({
             result: res.data.data,
             page: {
-              total: res.data.total,
+              total: res.data.totalCount,
             },
           });
         });
@@ -399,88 +516,192 @@ watch(
       body.removeRecords.forEach((item) => {
         ids.push(item.id);
       });
-      return deleteDataApi(ids);
+      return deleteDataApi({ id: ids });
     };
   },
   { immediate: true, deep: true }
 );
+// watchEffect(() => {
+//   if (Array.isArray(props.operate) && props.operate.length) {
+//     for (let operate of props.operate) {
+//       operate["clickRow"] = function (row: Object, column, rowIndex, $table) {
+//         if (operate["code"] === "detail") {
+//           rowDetailBtn(row, column, rowIndex, $table);
+//         } else if (operate["code"] === "edit") {
+//           rowEditBtn(row, column, rowIndex, $table);
+//         } else if (operate["code"] === "delete") {
+//           rowDeleteBtn(row, column, rowIndex, $table);
+//         }
+//         emits("clickRow", row, operate["code"], mode, column, rowIndex, $table);
+//       };
+//     }
+//   }
+// });
+let formatOperates = computed(() => {
+  if (Array.isArray(props.operate) && props.operate.length) {
+    for (let operate of props.operate) {
+      operate["clickRow"] = function (row: Object, column, rowIndex, $table) {
+        if (operate["code"] === "detail") {
+          rowDetailBtn(row, column, rowIndex, $table);
+        } else if (operate["code"] === "edit") {
+          rowEditBtn(row, column, rowIndex, $table);
+        } else if (operate["code"] === "delete") {
+          rowDeleteBtn(row, column, rowIndex, $table);
+        }
+        emits("clickRow", row, operate["code"], mode, column, rowIndex, $table);
+      };
+    }
+  }
+  return props.operate;
+});
+
+//刷新
 watch(
-  () => props.operate,
-  (newVal: any, oldVal) => {
-    if (Array.isArray(newVal) && newVal.length) {
-      newVal.forEach((operate: Object) => {
-        operate["clickRow"] = function (row: Object) {
-          if (operate["code"] === "detail") {
-            rowDetailBtn(row);
-          } else if (operate["code"] === "edit") {
-            rowEditBtn(row);
-          } else if (operate["code"] === "delete") {
-            rowDeleteBtn(row);
-          }
-          emits("clickRow", row, operate["code"], mode);
-        };
-      });
+  () => props.gridOptions.refresh,
+  (newVal: boolean, oldVal) => {
+    if (newVal === true) {
+      gridTable.value.commitProxy("query");
+      props.gridOptions.refresh = false;
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
+//监听弹框模式
 watch(
   () => mode.value,
-  (newVal: any, oldVal) => {
-    if (newVal === "add" || newVal === "edit") {
-      props.dialogConfig.dialogBtns = [
-        {
-          type: "submit",
-          status: "primary",
-          content: "提交",
-        },
-        {
-          type: "reset",
-          status: "",
-          content: "重置",
-        },
-      ];
-    } else {
-      props.dialogConfig.dialogBtns = [
-        {
-          type: "close", //cancel
-          status: "info",
-          content: "关闭",
-        },
-      ];
-    }
+  (newVal: string, oldVal) => {
+    if (props.gridOptions.customDialog) return;
+    //buttons显隐
+    let newBtns = props.dialogConfig.footer.buttons?.filter((item) => {
+      return item.prev.find((i) => i === newVal);
+    });
+    dialogConfig.value.footer.buttons = newBtns;
+    //title
+    const titles = { add: "新增", edit: "编辑", detail: "详情" };
+    dialogConfig.value.title = titles[newVal];
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
-onMounted(() => {});
+onMounted(() => {
+  nextTick(() => {
+    // console.log("gridTable:", gridTable.value);
+  });
+});
+
+function handleSwitchChange(row, column) {
+  emits("handleSwitchChange", row, column, row[`${column["field"]}`]);
+  // console.log("handleSwitchChange:", row[`${column["field"]}`], row, column);
+}
 
 function toolbarButtonClick(params) {
+  emits("toolbarButtonClick", params);
+  if (gridOptions.value.customDialog) return;
+  // 点击了工具栏新增按钮
   if (params.code === "add") {
-    // 点击了工具栏新增按钮
-    let resetFormData = JSON.parse(JSON.stringify(props.dialogConfig.formData));
+    mode.value = "add";
+    //重置表单值
+    let resetFormData = JSON.parse(
+      JSON.stringify(props.dialogFormConfig.formFields)
+    );
     for (let key in resetFormData) {
       resetFormData[key] = null;
     }
-    props.dialogConfig.formData = resetFormData;
-    props.dialogConfig.formItems = JSON.parse(
-      JSON.stringify(oldFormItems.value)
+    props.dialogFormConfig.formFields = resetFormData;
+    //改为新增类型的表单
+    dialogFormConfigItems.value = JSON.parse(
+      JSON.stringify(dialogFormItemsOfAdd.value)
     );
-    mode.value = "add";
-    isModalOpen.value = true;
-    //将文本转换为输入框等编辑类型
-    props.dialogConfig.formItems.forEach((item) => {
-      if (!item["type"] || item["type"] === "none") {
-        if (item["inputType"] === "text" || item["inputType"] === "input") {
-          item["type"] = "input";
-        }
-      }
-    });
+    props.dialogVisible.val = true;
   }
-  emits("toolbarButtonClick", params);
 }
 
-//弹框提交按钮
+function rowDetailBtn(row, column, rowIndex, $table) {
+  if (gridOptions.value.customDialog) return;
+  mode.value = "detail";
+  dialogFormConfigItems.value = JSON.parse(
+    JSON.stringify(dialogFormItemsOfDetail.value)
+  );
+  props.dialogFormConfig.formFields = row;
+  props.dialogVisible.val = true;
+}
+
+function rowEditBtn(row, column, rowIndex, $table) {
+  if (gridOptions.value.customDialog) return;
+  mode.value = "edit";
+  dialogFormConfigItems.value = JSON.parse(
+    JSON.stringify(dialogFormItemsOfEdit.value)
+  );
+  props.dialogFormConfig.formFields = JSON.parse(JSON.stringify(row));
+  props.dialogVisible.val = true;
+}
+
+async function rowDeleteBtn(row, column, rowIndex, $table) {
+  mode.value = "delete";
+  ElMessageBox.confirm("确定要删除吗?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await props.deleteDataApi(row.id);
+      gridTable.value.commitProxy("query"); //触发查询ajax.query
+      ElMessage({
+        type: "success",
+        message: "删除成功",
+      });
+    })
+    .catch(() => {});
+}
+
+//弹框按钮
+async function dialogClick(value) {
+  // emits(value, value);
+  emits("dialogClick", value);
+  if (gridOptions.value.customDialog) return;
+  switch (value) {
+    case "cancel": {
+      props.dialogVisible.val = false;
+      break;
+    }
+    case "confirm": {
+      props.dialogVisible.val = false;
+      break;
+    }
+    case "submit": {
+      if (mode.value === "add") {
+        let data = props.dialogFormConfig.formFields;
+        try {
+          let res = await props.addDataApi(data);
+          ElMessage.success(res["data"]["msg"] || "新增成功");
+          props.dialogVisible.val = false;
+          gridTable.value.commitProxy("query"); //触发查询ajax.query，用于刷新数据并且保持当前页
+          // gridTable.value.commitProxy('reload') // 触发查询 ajax.query，并清除表格所有状态，回到第一页
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (mode.value === "edit") {
+        let data = props.dialogFormConfig.formFields;
+        try {
+          let res = await props.updateDataApi(data);
+          ElMessage.success(res["data"]["msg"] || "编辑成功");
+          props.dialogVisible.val = false;
+          gridTable.value.commitProxy("query"); //触发查询ajax.query
+          // gridTable.value.commitProxy('reload') // 触发查询 ajax.query，并清除表格所有状态，回到第一页
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      break;
+    }
+    case "reset": {
+      props.dialogVisible.val = false;
+      break;
+    }
+  }
+}
+
+//弹框提交按钮，弃用
 async function submitEvent(data) {
   emits("submitEvent", data);
   try {
@@ -488,18 +709,18 @@ async function submitEvent(data) {
       let res = await props.addDataApi(data);
       if (res["data"]["code"] < 400) {
         ElMessage.success(res["data"]["msg"] || "新增成功");
-        isModalOpen.value = false;
+        props.dialogVisible.val = false;
         // let newData = await props.getDataApi();
         // gridTable.value.loadData(newData.data.data);
         gridTable.value.commitProxy("query"); //触发查询ajax.query，用于刷新数据并且保持当前页
         // gridTable.value.commitProxy('reload') // 触发查询 ajax.query，并清除表格所有状态，回到第一页
       }
-      isModalOpen.value = false;
+      props.dialogVisible.val = false;
     } else if (mode.value === "edit") {
       let res = await props.updateDataApi(data);
       if (res["data"]["code"] < 400) {
         ElMessage.success(res["data"]["msg"] || "编辑成功");
-        isModalOpen.value = false;
+        props.dialogVisible.val = false;
         gridTable.value.commitProxy("query"); //触发查询ajax.query
         // gridTable.value.commitProxy('reload') // 触发查询 ajax.query，并清除表格所有状态，回到第一页
       }
@@ -524,46 +745,25 @@ const gridEvent = {
   },
 };
 
-function rowDetailBtn(row) {
-  mode.value = "detail";
-  isModalOpen.value = true;
-  //转换文本格式
-  let formItems = JSON.parse(JSON.stringify(props.dialogConfig.formItems));
-  formItems.forEach((item) => {
-    item.type = "";
-  });
-  props.dialogConfig.formItems = formItems;
-  props.dialogConfig.formData = row;
-}
-function rowEditBtn(row) {
-  mode.value = "edit";
-  isModalOpen.value = true;
-  props.dialogConfig.formItems = JSON.parse(JSON.stringify(oldFormItems.value));
-  props.dialogConfig.formData = row;
-}
-async function rowDeleteBtn(row) {
-  mode.value = "delete";
-  ElMessageBox.confirm("确定要删除吗?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await props.deleteDataApi(row.id);
-      gridTable.value.commitProxy("query"); //触发查询ajax.query
-      ElMessage({
-        type: "success",
-        message: "删除成功",
-      });
-    })
-    .catch(() => {});
-}
 //重置弹窗表单
 function resetEvent(e) {
   // $form.value.resetFields();
 }
 //关闭弹窗
 function close(e) {
-  isModalOpen.value = e || false;
+  props.dialogVisible.val = e || false;
+}
+//深拷贝包含函数
+function deepClone(obj) {
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+  let clone = Array.isArray(obj) ? [] : {};
+  for (let key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      clone[key] = deepClone(obj[key]);
+    }
+  }
+  return clone;
 }
 </script>

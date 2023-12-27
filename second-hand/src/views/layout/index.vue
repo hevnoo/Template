@@ -1,13 +1,13 @@
 <template>
   <div class="wrapper">
-    <div style="height: 60px"></div>
+    <!-- <div style="height: 60px"></div>
     <nav class="nav">
       <Header></Header>
     </nav>
     <main>
       <router-view></router-view>
       <Footer></Footer>
-    </main>
+    </main> -->
   </div>
 </template>
 

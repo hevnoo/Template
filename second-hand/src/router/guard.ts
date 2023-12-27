@@ -35,30 +35,30 @@ export function beforeEach(
         //如果为真，就是刷新; 假就是跳转。
         isRoute = false;
         {
-          menuList.map((m: any) => {
-            const { path, name, component, meta } = m;
-            const item = {
-              path,
-              name,
-              component: () => import(`../views${component}`),
-              meta,
-            };
-            router.addRoute("layout", item);
-            //向layout添加子路由！
-            if (m.children) {
-              m.children.map((s: any) => {
-                const { path, name, component, meta } = s;
-                const res = {
-                  path,
-                  name,
-                  component: () => import(`@/views${component}`),
-                  meta,
-                };
-                router.addRoute(`${m.name}`, res);
-                //向父级添加子路由！
-              });
-            }
-          });
+          // menuList.map((m: any) => {
+          //   const { path, name, component, meta } = m;
+          //   const item = {
+          //     path,
+          //     name,
+          //     component: () => import(`../views${component}`),
+          //     meta,
+          //   };
+          //   router.addRoute("layout", item);
+          //   //向layout添加子路由！
+          //   if (m.children) {
+          //     m.children.map((s: any) => {
+          //       const { path, name, component, meta } = s;
+          //       const res = {
+          //         path,
+          //         name,
+          //         component: () => import(`@/views${component}`),
+          //         meta,
+          //       };
+          //       router.addRoute(`${m.name}`, res);
+          //       //向父级添加子路由！
+          //     });
+          //   }
+          // });
           //额外添加的其他路由
           // router.addRoute('article', articleDetailRouter)
 

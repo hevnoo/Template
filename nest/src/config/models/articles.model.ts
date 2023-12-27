@@ -8,13 +8,15 @@ import {
   ForeignKey,
   BelongsTo,
   Default,
+  HasMany,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 // import { sequelize } from 'src/config/database';
 import { Users } from './users.model'; //外表
+import { Favorites } from './favorites.model';
 
-@Table({ tableName: 'article', timestamps: true })
-export class Article extends Model<Article> {
+@Table({ tableName: 'articles', timestamps: true })
+export class Articles extends Model<Articles> {
   // @PrimaryKey
   // @AutoIncrement
   @Default(uuidv4) // 设置默认值为 UUID v4
@@ -25,7 +27,7 @@ export class Article extends Model<Article> {
     primaryKey: true, //主键
     unique: true,
   })
-  public id!: number;
+  public id!: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
   public title!: string;
@@ -37,11 +39,17 @@ export class Article extends Model<Article> {
   @ForeignKey(() => Users)
   @Default(uuidv4)
   @Column({ type: DataType.UUID, allowNull: false })
-  public authorId!: string;
+  public userId!: string;
 
   //创建一个名为 author 的属性，用于访问与 Users 模型关联的作者信息。
   @BelongsTo(() => Users)
-  public author!: Users;
+  public user!: Users;
+
+  //一对多-可使用左连接查询
+  // @HasMany(() => Favorites)
+  // favorites: Favorites;
+  @HasMany(() => Favorites, { foreignKey: 'articleId', as: 'favorites' })
+  public favorites!: Favorites[];
 
   // @ForeignKey(() => Tag)
   // @Column(DataType.INTEGER.UNSIGNED)
@@ -53,8 +61,16 @@ export class Article extends Model<Article> {
   @Column({ type: DataType.STRING })
   public category!: string;
 
-  @Column({ type: DataType.INTEGER.UNSIGNED })
-  public views!: number;
+  //阅读量-通过查询创建
+  // @Column({ type: DataType.INTEGER.UNSIGNED })
+  // public viewCount!: number;
+
+  //点赞数-通过查询创建
+  // @Column({ type: DataType.INTEGER.UNSIGNED })
+  // public likeCount!: number;
+
+  // @Column({ type: 'integer', field: 'likeCount' })
+  // public favoritesCount!: number;
 }
 
 // async function syncModels() {
@@ -66,7 +82,7 @@ export class Article extends Model<Article> {
 // }
 // syncModels();
 
-export default Article;
+export default Articles;
 
 /*
 1.

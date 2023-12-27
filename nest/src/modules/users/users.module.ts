@@ -19,7 +19,7 @@ import { jwtConstants } from 'src/utils/constant';
   ],
   exports: [UsersService], //导出服务即被其他模块访问
   imports: [
-    SequelizeModule.forFeature([Users]),
+    SequelizeModule.forFeature([Users]), //引入sql
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secretKey,
