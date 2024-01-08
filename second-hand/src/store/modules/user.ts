@@ -37,9 +37,7 @@ const user = defineStore("/user", {
         storage.setLocal("expiresIn", data.expiresIn);
         this.refreshToken = data.refreshToken;
         storage.setCookie("refreshToken", data.refreshToken);
-        setTimeout(() => {
-          router.push("/");
-        }, 500);
+        router.push("/");
         this.setMenu();
         // setTokenTime()
       } catch (error) {

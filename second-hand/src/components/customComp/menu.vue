@@ -17,7 +17,7 @@
     </header>
     <template v-for="(item, index) in (props.value as any[])" :key="item.id">
       <el-menu-item
-        v-if="!item.children"
+        v-if="!item.hasOwnProperty('children')"
         :index="item.path"
         @click="clickItem(item.name, item.component, index)"
       >
@@ -61,7 +61,7 @@
     <div class="flex-grow" />
     <template v-for="(item, index) in (props.value as any[])" :key="index">
       <el-menu-item
-        v-if="!item.children.length"
+        v-if="!item.hasOwnProperty('children')"
         :index="item.path"
         @click="clickItem(item.name, item.component, index)"
       >

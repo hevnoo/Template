@@ -3,10 +3,10 @@
 
 //  * staticRouter(静态路由)
 //引入插件自动生成的路由pages
-import routes from "pages-generated";
-import { setupLayouts } from "virtual:generated-layouts";
-import generatedRoutes from "virtual:generated-pages";
-const routes = setupLayouts(generatedRoutes);
+// import routes from "pages-generated";
+// import { setupLayouts } from "virtual:generated-layouts";
+// import generatedRoutes from "virtual:generated-pages";
+// const routes = setupLayouts(generatedRoutes);
 export const staticRouter = [
   {
     path: "/login",
@@ -22,7 +22,7 @@ export const staticRouter = [
     component: () => import("@/layout/index.vue"),
     redirect: "/403",
     children: [
-      ...routes,
+      // ...routes,
       {
         path: "/403",
         name: "403",

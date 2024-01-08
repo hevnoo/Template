@@ -1,7 +1,7 @@
 <template>
   <div class="h-wrapper">
     <Menu
-      :value="menuValue"
+      :value="menu"
       :mode="'horizontal'"
       :select="handleSelect"
       :logout="logout"
@@ -17,23 +17,22 @@ import { user } from "@/store";
 import { storeToRefs } from "pinia";
 import storage from "@/utils/storage.js";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { includes } from "xe-utils";
-import { map } from "xe-utils";
-import { toArrayTree, arrayToTree } from "xe-utils";
+// import { toArrayTree, arrayToTree } from "xe-utils";
 const route = useRoute();
 const router = useRouter();
 const useLogin: any = user();
 let { token, role, menu } = storeToRefs(useLogin);
-console.log("getRoutes:", router.getRoutes());
+console.log("menu:", menu.value);
+// console.log("getRoutes:", router.getRoutes());
 // const menuValue = router.getRoutes();
-const menuValue = computed(() => {
-  let routeList = ["home", "info", "category", "test", "test-news"];
-  let routes = router
-    .getRoutes()
-    .filter((item) => routeList.includes(`${item.name}`));
-  // routes = arrayToTree(routes);
-  return routes;
-});
+// const menuValue = computed(() => {
+//   let routeList = ["home", "info", "category", "test", "test-news"];
+//   let routes = router
+//     .getRoutes()
+//     .filter((item) => routeList.includes(`${item.name}`));
+//   // routes = arrayToTree(routes);
+//   return routes;
+// });
 //根据path生成tree树
 function arrayToTree(data) {
   const rootNode = {
@@ -77,16 +76,6 @@ function arrayToTree(data) {
   return treeData;
 }
 
-function getParentKey(item) {
-  const lastIndex = item.path.lastIndexOf("/");
-  if (lastIndex === 0) {
-    return "/";
-  }
-  console.log("", item.path.slice(0, lastIndex));
-  return item.path.slice(0, lastIndex);
-}
-
-console.log("menuValue:", menuValue.value);
 onMounted(() => {
   nextTick(() => {
     logout();

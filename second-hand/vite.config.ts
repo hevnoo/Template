@@ -9,24 +9,24 @@ import layouts from "vite-plugin-vue-layouts";
 export default defineConfig({
   plugins: [
     vue(),
-    pages({
-      dirs: "src/pages", // 需要生成路由的文件目录
-      exclude: ["**/components/*.vue"], // 排除在外的目录，即不将所有 components 目录下的 .vue 文件生成路由
-      extendRoute(route) {
-        // 在这里可以对每个路由对象进行自定义配置
-        // 例如，为每个路由添加 meta 信息
-        // route.meta = { requiresAuth: true };
-        if (routeMetas.hasOwnProperty(`${route.name}`)) {
-          route.meta = routeMetas[`${route.name}`];
-        }
-        // 返回修改后的路由对象
-        return route;
-      },
-    }),
-    layouts({
-      layoutsDirs: "src/layout", // 布局文件存放目录
-      defaultLayout: "index", // 默认布局，对应 src/layout/index.vue
-    }),
+    // pages({
+    //   dirs: "src/pages", // 需要生成路由的文件目录
+    //   exclude: ["**/components/*.vue"], // 排除在外的目录，即不将所有 components 目录下的 .vue 文件生成路由
+    //   extendRoute(route) {
+    //     // 在这里可以对每个路由对象进行自定义配置
+    //     // 例如，为每个路由添加 meta 信息
+    //     // route.meta = { requiresAuth: true };
+    //     if (routeMetas.hasOwnProperty(`${route.name}`)) {
+    //       route.meta = routeMetas[`${route.name}`];
+    //     }
+    //     // 返回修改后的路由对象
+    //     return route;
+    //   },
+    // }),
+    // layouts({
+    //   layoutsDirs: "src/layout", // 布局文件存放目录
+    //   defaultLayout: "index", // 默认布局，对应 src/layout/index.vue
+    // }),
   ],
   // 配置根路径与@路径
   base: "./",

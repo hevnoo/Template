@@ -1,5 +1,6 @@
 <template>
   <div class="w-home">
+    <div>自定义弹窗</div>
     <VxeGridTable
       :gridOptions="gridOptions"
       :columns="columns"
