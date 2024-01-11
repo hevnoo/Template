@@ -2,19 +2,24 @@
   <div class="not-found">
     <h1>404 - 页面未找到</h1>
     <p>很抱歉，您访问的页面不存在。</p>
-    <button @click="goHome">返回首页</button>
+    <button class="btn" @click="backHome">返回首页</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { user } from "@/store";
 const route = useRoute();
 const router = useRouter();
-
+const userStore: any = user();
+let { menu } = storeToRefs(userStore);
+console.log("store-menu", menu.value);
 // 跳转到首页
-const goHome = () => {
+const backHome = () => {
   router.push("/");
+  console.log("store-menu", menu.value);
 };
 </script>
 
@@ -41,17 +46,21 @@ p {
   margin-bottom: 20px;
 }
 
-button {
+.btn {
   padding: 10px 20px;
   font-size: 18px;
-  background-color: #4caf50;
+  background-color: rgba(76, 175, 80, 1);
   color: #fff;
   border: none;
+  border-radius: 7px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #45a049;
+    background-color: rgba(69, 160, 73, 1);
+  }
+  &:active {
+    background-color: rgba(64, 163, 69, 1);
   }
 }
 </style>

@@ -3,6 +3,8 @@ import storage from "@/utils/storage";
 import { loginApi, registerApi, getMenuApi, refreshTokenApi } from "@/api/user";
 import { ElMessage } from "element-plus";
 import router from "@/router";
+import { nextTick } from "vue";
+// import { nextTick } from "process";
 
 const user = defineStore("/user", {
   state: () => ({
@@ -37,9 +39,9 @@ const user = defineStore("/user", {
         storage.setLocal("expiresIn", data.expiresIn);
         this.refreshToken = data.refreshToken;
         storage.setCookie("refreshToken", data.refreshToken);
-        router.push("/");
-        this.setMenu();
+        await this.setMenu();
         // setTokenTime()
+        router.push("/");
       } catch (error) {
         console.log(error);
       }
@@ -66,6 +68,7 @@ const user = defineStore("/user", {
       sessionStorage.clear();
       storage.setLocal("lang", "zh");
       router.replace("/login");
+      // router.push("/login");
     },
   },
 });

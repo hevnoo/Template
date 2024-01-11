@@ -59,11 +59,11 @@ export const staticRouter = [
  */
 export const errorRouter = [
   {
-    path: "/403",
-    name: "403",
-    component: () => import("@/components/error/403.vue"),
+    path: "/404",
+    name: "404",
+    component: () => import("@/components/error/404.vue"),
     meta: {
-      title: "403页面",
+      title: "404",
     },
   },
 

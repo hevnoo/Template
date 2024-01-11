@@ -1,11 +1,6 @@
 <template>
   <div class="h-wrapper">
-    <Menu
-      :value="menu"
-      :mode="'horizontal'"
-      :select="handleSelect"
-      :logout="logout"
-    ></Menu>
+    <Menu :value="menu" :mode="'horizontal'" :select="handleSelect"></Menu>
   </div>
 </template>
 
@@ -20,9 +15,9 @@ import { ElMessage, ElMessageBox } from "element-plus";
 // import { toArrayTree, arrayToTree } from "xe-utils";
 const route = useRoute();
 const router = useRouter();
-const useLogin: any = user();
-let { token, role, menu } = storeToRefs(useLogin);
-console.log("menu:", menu.value);
+const userStore: any = user();
+let { token, role, menu } = storeToRefs(userStore);
+// console.log("menu:", menu.value);
 // console.log("getRoutes:", router.getRoutes());
 // const menuValue = router.getRoutes();
 // const menuValue = computed(() => {
@@ -112,7 +107,7 @@ const msgBox = () => {
         type: "success",
         message: "退出登录",
       });
-      useLogin.logout();
+      userStore.logout();
     })
     .catch(() => {});
 };
